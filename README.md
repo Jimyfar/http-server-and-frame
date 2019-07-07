@@ -32,19 +32,19 @@ python server.py
 ### 主页
 ![主页](images/主页.png)
 
-## 登录界面
+### 登录界面
 ![登录界面](images/登录界面.png)
 
-## ajax todo 前端和后端发送请求接收响应
+### ajax todo 前端和后端发送请求接收响应
 ![ajax](images/ajax.jpg)
 
-## weibo CRUD gif
+### weibo CRUD gif
 微博增删改查，微博权限控制（博主可以修改博文和删除博文，博主可以删除评论但不可以修改评论。评论楼主可以修改和删除评论）
 ![weibo CRUD gif](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%204.gif)
 
-## 注册登录 gif
+### 注册登录 gif
 ![注册登录](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%202.gif)
 
-## ajax gif
+### ajax gif
 ![注册登录](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%203.gif)
 
