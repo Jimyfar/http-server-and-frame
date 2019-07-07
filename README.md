@@ -40,11 +40,11 @@ python server.py
 
 ## weibo CRUD gif
 微博增删改查，微博权限控制（博主可以修改博文和删除博文，博主可以删除评论但不可以修改评论。评论楼主可以修改和删除评论）
-![weibo CRUD gif](images/Animation 4.gif)
+![weibo CRUD gif](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%204.gif)
 
 ## 注册登录 gif
-![注册登录](images/Animation 2.gif)
+![注册登录](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%202.gif)
 
 ## ajax gif
-![注册登录](images/Animation 3.gif)
+![注册登录](https://github.com/Jimyfar/http-server-and-frame/blob/master/images/Animation%203.gif)
 
