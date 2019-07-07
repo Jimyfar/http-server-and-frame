@@ -1,3 +1,4 @@
+from models.todo_ajax import TodoAjax
 from routes import (
     redirect,
     current_user,
@@ -12,7 +13,7 @@ def index(request):
     todo 首页的路由函数
     """
     u = current_user(request)
-    todos = Todo.find_all(user_id=u.id)
+    todos = TodoAjax.all(user_id=u.id)
     # 替换模板文件中的标记字符串
     return html_response('todo_index.html', todos=todos)
 
@@ -23,7 +24,7 @@ def add(request):
     """
     u = current_user(request)
     form = request.form()
-    Todo.add(form, u.id)
+    TodoAjax.add(form, u.id)
     # 浏览器发送数据过来被处理后, 重定向到首页
     # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/todo/index')
@@ -31,13 +32,13 @@ def add(request):
 
 def delete(request):
     todo_id = int(request.query['id'])
-    Todo.delete(todo_id)
+    TodoAjax.delete(todo_id)
     return redirect('/todo/index')
 
 
 def edit(request):
     todo_id = int(request.query['id'])
-    t = Todo.find_by(id=todo_id)
+    t = TodoAjax.one(id=todo_id)
     return html_response('todo_edit.html', todo=t)
 
 
@@ -46,7 +47,7 @@ def update(request):
     用于增加新 todo 的路由函数
     """
     form = request.form()
-    Todo.update(form)
+    TodoAjax.update(form)
     # 浏览器发送数据过来被处理后, 重定向到首页
     # 浏览器在请求新首页的时候, 就能看到新增的数据了
     return redirect('/todo/index')
@@ -65,7 +66,7 @@ def same_user_required(route_function):
             todo_id = request.query['id']
         else:
             todo_id = request.form()['id']
-        t = Todo.find_by(id=int(todo_id))
+        t = TodoAjax.one(id=int(todo_id))
 
         if t.user_id == u.id:
             return route_function(request)
