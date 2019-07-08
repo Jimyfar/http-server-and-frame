@@ -7,6 +7,18 @@ import secret
 from utils import log
 
 
+def pymysql_connection():
+    connection = pymysql.connect(
+        host='localhost',
+        user='root',
+        password=secret.mysql_password,
+        db=config.db_name,
+        charset='utf8mb4',
+        cursorclass=pymysql.cursors.DictCursor
+    )
+    return connection
+
+
 class SQLModel(object):
     # User.all()
     # User.one()
@@ -17,6 +29,14 @@ class SQLModel(object):
     #   query.where(id=1)
     # else:
     #   query.join('session', 'id', 'user_id').where(id=1)
+
+    @classmethod
+    def new(cls, form):
+        # cls(form) 相当于 User(form)
+        m = cls(form)
+        id = cls.insert(m.__dict__)
+        m.id = id
+        return m
 
     def __init__(self, form):
         # 因为 id 是数据库给的，所以最开始初始化的时候必须是 None
@@ -29,7 +49,9 @@ class SQLModel(object):
     def __repr__(self):
         """
         __repr__ 是一个魔法方法
-
+        简单来说, 它的作用是得到类的 字符串表达 形式
+        比如 print(u) 实际上是 print(u.__repr__())
+        不明白就看书或者 搜
         """
         name = self.__class__.__name__
         properties = ['{}: ({})'.format(k, v) for k, v in self.__dict__.items()]
@@ -41,6 +63,105 @@ class SQLModel(object):
         # SELECT * FROM user
         sql_select = 'SELECT * FROM {}'.format(cls.table_name())
         return Query(sql_select, connection, cls)
+
+    @classmethod
+    def one(cls, **kwargs):
+        connection = pymysql_connection()
+        m = cls.select(connection).where(**kwargs).one()
+        try:
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+        finally:
+            connection.close()
+        return m
+
+    @classmethod
+    def all(cls, **kwargs):
+        connection = pymysql_connection()
+        m = cls.select(connection).where(**kwargs).all()
+        try:
+            connection.commit()
+        except Exception as e:
+            connection.rollback()
+        finally:
+            connection.close()
+        return m
+
+    @classmethod
+    def insert(cls, form):
+        connection = pymysql_connection()
+        # {
+        #     'username': 'gua',
+        #     'password': 123,
+        # }
+        form.pop('id')
+        # INSERT INTO `User` (
+        #   `username`, `password`, `email`
+        # ) VALUES (
+        #   %s, %s, %s
+        # )
+        sql_keys = ', '.join(['`{}`'.format(k) for k in form.keys()])
+        sql_values = ', '.join(['%s'] * len(form))
+        sql_insert = 'INSERT INTO {} ({}) VALUES ({})'.format(
+            cls.table_name(),
+            sql_keys,
+            sql_values,
+        )
+        log('ORM insert <{}>'.format(sql_insert))
+
+        values = tuple(form.values())
+
+        # try:
+        #   cursor = cls.connection.cursor()
+        #   cursor.execute(sql_insert, values)
+        #   _id = cursor.lastrowid
+        # finally:
+        #   cursor.close()
+        with connection.cursor() as cursor:
+            cursor.execute(sql_insert, values)
+            _id = cursor.lastrowid
+        connection.commit()
+        connection.close()
+
+        return _id
+
+    @classmethod
+    def update(cls, connection, id, **kwargs):
+        connection = pymysql_connection()
+        # UPDATE
+        # 	`User`
+        # SET
+        # 	`username`=%s, `password`=%s
+        # WHERE `id`=%s;
+        sql_set = ', '.join(
+            ['`{}`=%s'.format(k) for k in kwargs.keys()]
+        )
+        sql_update = 'UPDATE {} SET {} WHERE `id`=%s'.format(
+            cls.table_name(),
+            sql_set,
+        )
+        log('ORM update <{}>'.format(sql_update.replace('\n', ' ')))
+
+        values = list(kwargs.values())
+        values.append(id)
+        values = tuple(values)
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql_update, values)
+        connection.commit()
+        connection.close()
+
+    @classmethod
+    def delete(cls,connection, id):
+        connection = pymysql_connection()
+        sql_delete = 'DELETE FROM {} WHERE `id`=%s'.format(cls.table_name())
+        log('ORM delete <{}>'.format(sql_delete.replace('\n', ' ')))
+
+        with connection.cursor() as cursor:
+            cursor.execute(sql_delete, (id,))
+        connection.commit()
+        connection.close()
 
 
 class Query(object):
